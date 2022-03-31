@@ -21,6 +21,8 @@ import {
     MemoryEvent,
     Variable,
     Response,
+    Event,
+    
 } from '@vscode/debugadapter';
 import { DebugProtocol } from '@vscode/debugprotocol';
 import { ChildProcess, exec, spawn } from 'child_process';
@@ -29,7 +31,7 @@ import * as path from 'path';
 import { createInterface } from 'readline';
 import internal = require('stream');
 import WebSocket = require('ws');
-import { createResolvable } from './util';
+import { createResolvable } from '../util';
 
 const assemblerPath = '/home/ilya/work/cdm8e/ORiGinalASM/assembler/main.py';
 const emulatorPath = '/home/ilya/work/cdm8e/ORiGinalASM/emulator/emulator.py';
@@ -37,51 +39,6 @@ const emulatorPath = '/home/ilya/work/cdm8e/ORiGinalASM/emulator/emulator.py';
 interface ILaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
     program: string;
 }
-
-type CdmRegisterName = 'r0' | 'r1' | 'r2' | 'r3' | 'ps' | 'sp' | 'pc';
-
-interface ICdm8State {
-    registers: Record<CdmRegisterName, number>;
-    memory: number[];
-}
-
-type CdmRequest = CdmStepRequest | CdmSetBreakpointsRequest | CdmPauseRequest | CdmContinueRequest;
-type CdmEvent = CdmStateEvent | CdmStopEvent | CdmErrorEvent;
-
-// requests to emulator
-interface CdmStepRequest {
-    action: 'step';
-}
-
-interface CdmSetBreakpointsRequest{
-    action: 'breakpoints'
-    data: number[];
-}
-
-interface CdmPauseRequest{
-    action: 'pause',
-}
-
-interface CdmContinueRequest{
-    action: 'continue',
-}
-
-// events from emulator
-interface CdmStopEvent {
-    action: 'stop'
-    reason: string
-}
-
-interface CdmStateEvent {
-    action: 'state';
-    data: ICdm8State;
-}
-
-interface CdmErrorEvent {
-    action: 'error'
-    data: string
-}
-
 
 
 interface CodeLocation {
@@ -171,6 +128,9 @@ export class CdmDebugSession extends DebugSession {
 
 
         console.log('done initialization');
+        
+
+
     }
 
     private onEmulatorMessage(message: CdmEvent) {
@@ -181,6 +141,7 @@ export class CdmDebugSession extends DebugSession {
                 console.log(this.codeMap.get(this.latestState.registers.pc));
             }
             console.log('got state');
+            this.sendEvent(new Event('cdmState', this.latestState));
         }else if(message.action === 'stop'){
             this.sendEvent(new StoppedEvent(message.reason, CdmDebugSession.threadID));
         }else if(message.action === 'error'){
