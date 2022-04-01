@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { CancellationToken, DebugConfiguration, ProviderResult, WorkspaceFolder } from 'vscode';
+// import { getCdmPath } from './cdmPath';
 import { CdmDebugSession } from './debugSession';
 import { activateDebugView } from './debugView';
 
@@ -64,7 +65,6 @@ export function activateCdmDebug(context: vscode.ExtensionContext){
     }
 
 
-
     activateDebugView(context);
 }
 
@@ -103,6 +103,6 @@ class CdmConfigurationProvider implements vscode.DebugConfigurationProvider {
 
 class InlineDebugAdapterFactory implements vscode.DebugAdapterDescriptorFactory {
     createDebugAdapterDescriptor(_session: vscode.DebugSession): ProviderResult<vscode.DebugAdapterDescriptor> {
-        return new vscode.DebugAdapterInlineImplementation(new CdmDebugSession());
+        return new vscode.DebugAdapterInlineImplementation(new CdmDebugSession(vscode.workspace.getConfiguration('cdm8').get('path')));
     }
 }

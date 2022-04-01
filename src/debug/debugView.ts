@@ -24,7 +24,7 @@ export function activateDebugView(context: vscode.ExtensionContext){
                 enableScripts: true
             });
             // currentPanel.webview.html = '<html><body>hello?</body></html>';
-            const onDiskPath = path.join(context.extensionPath, 'dist', 'webviews', 'debugView', 'index.html')
+            const onDiskPath = path.join(context.extensionPath, 'dist', 'webviews', 'debugView', 'index.html');
 
 
 

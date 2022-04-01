@@ -4,7 +4,7 @@
     "description": "",
     "version": "0.0.1",
     "engines": {
-        "vscode": "^1.65.0"
+        "vscode": "^1.66.0"
     },
     "categories": [
         "Other"
@@ -14,6 +14,16 @@
     ],
     "main": "./dist/extension.js",
     "contributes": {
+        "configuration" : {
+            "title": "Cdm8",
+            "properties": {
+                "cdm8.path" :{
+                    "title": "Cdm8 path",
+                    "description": "Path to cloned https://github.com/leadpogrommer/Cdm8-asm repo",
+                    "type": "string"
+                }
+            }
+        },
         "languages": [
             {
                 "id": "cdm8asm",

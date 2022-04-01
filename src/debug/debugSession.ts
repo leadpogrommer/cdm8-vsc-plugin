@@ -32,12 +32,12 @@ import { createInterface } from 'readline';
 import internal = require('stream');
 import WebSocket = require('ws');
 import { createResolvable } from '../util';
+import { verifyCdmPath } from './cdmPath';
 
-const assemblerPath = '/home/ilya/work/cdm8e/ORiGinalASM/assembler/main.py';
-const emulatorPath = '/home/ilya/work/cdm8e/ORiGinalASM/emulator/emulator.py';
 
 interface ILaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
     program: string;
+    cdmPath: string;
 }
 
 
@@ -59,12 +59,16 @@ export class CdmDebugSession extends DebugSession {
     launched = createResolvable<void>();
     breakpointsPerFile = new Map<string, number[]>();
     static threadID = 1;
+    cdmPath: string | undefined = undefined;
 
-    public constructor() {
+    public constructor(cdmPath: string | undefined) {
         super();
 
         this.setDebuggerColumnsStartAt1(true);
         this.setDebuggerLinesStartAt1(true);
+        this.cdmPath = cdmPath;
+
+        
     }
 
     protected initializeRequest(response: DebugProtocol.InitializeResponse, args: DebugProtocol.InitializeRequestArguments): void {
@@ -79,6 +83,15 @@ export class CdmDebugSession extends DebugSession {
     }
 
     protected async launchRequest(response: DebugProtocol.LaunchResponse, args: ILaunchRequestArguments) {
+        if(!this.cdmPath || !(await verifyCdmPath(this.cdmPath))){
+            this.sendEvent(new OutputEvent('Invalid or missing path to cdm8 repo', 'important'));
+            this.sendEvent(new TerminatedEvent());
+            return;
+        }
+
+        const assemblerPath = path.join(this.cdmPath, 'assembler/main.py');
+        const emulatorPath = path.join(this.cdmPath, 'emulator/emulator.py');
+
         console.log(`launched, program = ${args.program}`);
 
         const assemblerProcess = spawn('python', [assemblerPath, args.program]);
