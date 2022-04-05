@@ -18,5 +18,4 @@ window.addEventListener('message', (event) => {
   }
 
   div.appendChild(table);
-//   div.innerText = 'rBHGVJLK;g5wrgr5h3ju';
 });

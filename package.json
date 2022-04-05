@@ -14,10 +14,10 @@
     ],
     "main": "./dist/extension.js",
     "contributes": {
-        "configuration" : {
+        "configuration": {
             "title": "Cdm8",
             "properties": {
-                "cdm8.path" :{
+                "cdm8.path": {
                     "title": "Cdm8 path",
                     "description": "Path to cloned https://github.com/leadpogrommer/Cdm8-asm repo",
                     "type": "string"
@@ -111,6 +111,7 @@
         "@typescript-eslint/eslint-plugin": "^5.16.0",
         "@typescript-eslint/parser": "^5.16.0",
         "@vscode/test-electron": "^2.1.3",
+        "copy-webpack-plugin": "^10.2.4",
         "eslint": "^8.11.0",
         "glob": "^7.2.0",
         "html-inline-script-webpack-plugin": "^3.0.0",

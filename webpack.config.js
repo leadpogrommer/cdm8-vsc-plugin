@@ -4,8 +4,7 @@
 
 const path = require('path');
 
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const HtmlInlineScriptPlugin = require('html-inline-script-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 //@ts-check
 /** @typedef {import('webpack').Configuration} WebpackConfig **/
@@ -58,11 +57,16 @@ const debugViewConfig = {
     filename: 'index.js',
   },
   plugins: [
-    new HtmlWebpackPlugin({
-      filename: 'index.html',
-      template: './webviews/debugView/index.html',
-    }),
-    new HtmlInlineScriptPlugin(),
+    // new HtmlWebpackPlugin({
+    //   filename: 'index.html',
+    //   template: './webviews/debugView/index.html',
+    // }),
+    // new HtmlInlineScriptPlugin(),
+    new CopyWebpackPlugin({
+      'patterns': [
+        {'from': 'webviews/debugView/index.html'}
+      ]
+    })
   ],
   resolve: {
     extensions: ['.ts', '.js'],

@@ -6,6 +6,8 @@ import * as fs from 'fs';
 export function activateDebugView(context: vscode.ExtensionContext){
     let currentPanel: vscode.WebviewPanel | undefined;
 
+
+    // react to events from debugger
     context.subscriptions.push(vscode.debug.onDidReceiveDebugSessionCustomEvent((e) => {
         console.log(`Got custom event: ${JSON.stringify(e)}`);
         currentPanel?.webview.postMessage(e);
@@ -21,14 +23,22 @@ export function activateDebugView(context: vscode.ExtensionContext){
             currentPanel.reveal(vscode.ViewColumn.Beside);
         }else{
             currentPanel = vscode.window.createWebviewPanel('cdmDebugPanel', 'Cdm8e debug', vscode.ViewColumn.Beside, {
-                enableScripts: true
+                enableScripts: true,
+                localResourceRoots: [vscode.Uri.file(context.extensionPath)]
             });
-            // currentPanel.webview.html = '<html><body>hello?</body></html>';
-            const onDiskPath = path.join(context.extensionPath, 'dist', 'webviews', 'debugView', 'index.html');
+
+            const basePath = path.join(context.extensionPath, 'dist', 'webviews', 'debugView');
+            const htmlPath = path.join(basePath.toString(), 'index.html');
 
 
+            let htmlContent = (await fs.promises.readFile(htmlPath)).toString();
 
-            currentPanel.webview.html = (await fs.promises.readFile(onDiskPath)).toString();
+            let scriptJsPath = vscode.Uri.file(path.join(basePath.toString(), 'index.js'));
+            let scriptJsUri = scriptJsPath.with({ scheme: 'vscode-resource' });
+
+            htmlContent = htmlContent.replace('%SCRIPT_PATH%', scriptJsUri.toString());
+
+            currentPanel.webview.html = htmlContent;
 
             currentPanel.onDidDispose(()=>{
                 currentPanel = undefined;

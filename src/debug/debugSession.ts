@@ -100,6 +100,17 @@ export class CdmDebugSession extends DebugSession {
             this.sendEvent(new OutputEvent(data.toString(), 'debug console'));
         }
 
+        await new Promise((resolve) => {
+            assemblerProcess.on('exit', () => {
+                resolve(undefined);
+            });
+        });
+        if(assemblerProcess.exitCode !== 0){
+            this.sendEvent(new OutputEvent('Assembler exited with non-zero code', 'important'));
+            this.sendEvent(new TerminatedEvent());
+            return;
+        }
+
         const noExtensionPath = args.program.replace(new RegExp(`${path.extname(args.program)}$`), '');
         const imgPath = noExtensionPath + '.img';
         this.emulatorProcess = spawn('python', [emulatorPath, '--serve', imgPath]);
