@@ -2,13 +2,27 @@
 <html>
   <head> </head>
   <body>
+    <script type="module" src="%TOOLKIT_PATH%"></script>
     <script defer src="%SCRIPT_PATH%"></script>
     <style>
-      td {
-        min-width: 20px;
-        min-height: 20px;
+      #table-div td {
+        padding: 5px;
+        /* min-width: 20px; */
+        /* min-height: 20px; */
         border: 1px solid black;
+        font-family: monospace;
       }
+
+      #table-div th {
+        padding: 5px;
+        font-weight: bold;
+        font-family: monospace;
+      }
+      /* #table-di */
+      .stack-cell {
+        background-color: lightblue;
+      }
+      
     </style>
     <h1>RAM contents:</h1>
     <div id="table-div"></div>

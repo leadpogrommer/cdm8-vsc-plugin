@@ -24,7 +24,8 @@ export function activateDebugView(context: vscode.ExtensionContext){
         }else{
             currentPanel = vscode.window.createWebviewPanel('cdmDebugPanel', 'Cdm8e debug', vscode.ViewColumn.Beside, {
                 enableScripts: true,
-                localResourceRoots: [vscode.Uri.file(context.extensionPath)]
+                localResourceRoots: [vscode.Uri.file(context.extensionPath)],
+                retainContextWhenHidden: true,
             });
 
             const basePath = path.join(context.extensionPath, 'dist', 'webviews', 'debugView');
@@ -36,7 +37,17 @@ export function activateDebugView(context: vscode.ExtensionContext){
             let scriptJsPath = vscode.Uri.file(path.join(basePath.toString(), 'index.js'));
             let scriptJsUri = scriptJsPath.with({ scheme: 'vscode-resource' });
 
+            let toolkitUri = vscode.Uri.file(path.join(
+                context.extensionPath, 
+                "node_modules",
+                "@vscode",
+                "webview-ui-toolkit",
+                "dist",
+                "toolkit.js",
+              )).with({ scheme: 'vscode-resource' });
+
             htmlContent = htmlContent.replace('%SCRIPT_PATH%', scriptJsUri.toString());
+            htmlContent = htmlContent.replace('%TOOLKIT_PATH%', toolkitUri.toString());
 
             currentPanel.webview.html = htmlContent;
 
