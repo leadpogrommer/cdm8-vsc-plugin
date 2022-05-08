@@ -9,13 +9,18 @@ interface ICdm8State {
 
 
 // requests to emulator
-type CdmRequest = CdmStepRequest | CdmSetBreakpointsRequest | CdmPauseRequest | CdmContinueRequest;
+type CdmRequest = CdmStepRequest | CdmSetBreakpointsRequest | CdmPauseRequest | CdmContinueRequest | CdmSetLineLocationsRequest;
 interface CdmStepRequest {
     action: 'step';
 }
 
 interface CdmSetBreakpointsRequest{
     action: 'breakpoints'
+    data: number[];
+}
+
+interface CdmSetLineLocationsRequest{
+    action: 'line_locations'
     data: number[];
 }
 

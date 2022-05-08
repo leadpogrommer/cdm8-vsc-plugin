@@ -103,6 +103,7 @@ class CdmConfigurationProvider implements vscode.DebugConfigurationProvider {
 
 class InlineDebugAdapterFactory implements vscode.DebugAdapterDescriptorFactory {
     createDebugAdapterDescriptor(_session: vscode.DebugSession): ProviderResult<vscode.DebugAdapterDescriptor> {
-        return new vscode.DebugAdapterInlineImplementation(new CdmDebugSession(vscode.workspace.getConfiguration('cdm8').get('path')));
+        const config = vscode.workspace.getConfiguration("cdm8");
+        return new vscode.DebugAdapterInlineImplementation(new CdmDebugSession(config.get('asm'), config.get('emu')));
     }
 }

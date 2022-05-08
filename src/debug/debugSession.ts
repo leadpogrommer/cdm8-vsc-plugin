@@ -27,12 +27,15 @@ import {
 import { DebugProtocol } from '@vscode/debugprotocol';
 import { ChildProcess, exec, spawn } from 'child_process';
 import * as fs from 'fs';
+import { type } from 'os';
 import * as path from 'path';
+import * as process from 'process';
 import { createInterface } from 'readline';
 import internal = require('stream');
 import WebSocket = require('ws');
 import { createResolvable } from '../util';
 import { verifyCdmPath } from './cdmPath';
+import {CodeMap, CodeLocation, parseCodeMap} from './codeMap';
 
 
 interface ILaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
@@ -41,11 +44,7 @@ interface ILaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
 }
 
 
-interface CodeLocation {
-    file: string;
-    line: number;
-    column: number;
-}
+
 
 const registersVariableReference = 1;
 const memoryVariableReference = 2;
@@ -54,19 +53,21 @@ const dataMemVariableReference = 3;
 export class CdmDebugSession extends DebugSession {
     emulatorProcess!: ChildProcess;
     socket: WebSocket | null = null;
-    codeMap: Map<number, CodeLocation> = new Map();
+    codeMap: CodeMap = new Map();
     latestState: ICdm8State | null = null;
     launched = createResolvable<void>();
     breakpointsPerFile = new Map<string, number[]>();
     static threadID = 1;
-    cdmPath: string | undefined = undefined;
+    cdmAsmPath: string | undefined = undefined;
+    cdmEmuPath: string | undefined = undefined;
 
-    public constructor(cdmPath: string | undefined) {
+    public constructor(cdmAsmPath: string | undefined, cdmEmuPath: string | undefined) {
         super();
 
         this.setDebuggerColumnsStartAt1(true);
         this.setDebuggerLinesStartAt1(true);
-        this.cdmPath = cdmPath;
+        this.cdmAsmPath = cdmAsmPath;
+        this.cdmEmuPath = cdmEmuPath;
 
         
     }
@@ -83,18 +84,26 @@ export class CdmDebugSession extends DebugSession {
     }
 
     protected async launchRequest(response: DebugProtocol.LaunchResponse, args: ILaunchRequestArguments) {
-        if(!this.cdmPath || !(await verifyCdmPath(this.cdmPath))){
-            this.sendEvent(new OutputEvent('Invalid or missing path to cdm8 repo', 'important'));
+        if(!this.cdmAsmPath || !this.cdmEmuPath){
+            this.sendEvent(new OutputEvent('Invalid or missing path to cdm8 path', 'important'));
             this.sendEvent(new TerminatedEvent());
             return;
         }
 
-        const assemblerPath = path.join(this.cdmPath, 'assembler/main.py');
-        const emulatorPath = path.join(this.cdmPath, 'emulator/emulator.py');
 
         console.log(`launched, program = ${args.program}`);
 
-        const assemblerProcess = spawn('python', [assemblerPath, args.program]);
+
+        const noExtensionPath = args.program.replace(new RegExp(`${path.extname(args.program)}$`), '');
+        const imgPath = noExtensionPath + '.img';
+        const codeMapPath = noExtensionPath + '.dbg.json';
+        console.log(process.env.PATH);
+        const assemblerProcess = spawn(this.cdmAsmPath, ['-i', imgPath, '-d', codeMapPath, args.program]);
+        assemblerProcess.on('error', (e) => {
+            this.sendEvent(new OutputEvent(`ERROR: ${e.name}: ${e.message}`, 'important'));
+            this.sendEvent(new TerminatedEvent());
+            return;
+        });
         for await (const data of assemblerProcess.stdout) {
             // console.log(data.toString());
             this.sendEvent(new OutputEvent(data.toString(), 'debug console'));
@@ -111,9 +120,8 @@ export class CdmDebugSession extends DebugSession {
             return;
         }
 
-        const noExtensionPath = args.program.replace(new RegExp(`${path.extname(args.program)}$`), '');
-        const imgPath = noExtensionPath + '.img';
-        this.emulatorProcess = spawn('python', [emulatorPath, '--serve', imgPath]);
+        
+        this.emulatorProcess = spawn(this.cdmEmuPath, ['--serve', imgPath]);
 
         if (this.emulatorProcess.stdout === null || this.emulatorProcess.stderr === null) {
             this.sendEvent(new TerminatedEvent());
@@ -131,13 +139,11 @@ export class CdmDebugSession extends DebugSession {
 
         // load debug info
         // TODO: check if we successfully loaded file
-        const codeMapFile = await fs.promises.open(noExtensionPath + '.dbg.json', 'r');
-        const codeMapJson = JSON.parse((await codeMapFile.readFile()).toString());
+        const codeMapFile = await fs.promises.open(codeMapPath, 'r');
+        const codeMapData = (await codeMapFile.readFile()).toString();
         codeMapFile.close();
 
-        for (const [key, value] of Object.entries(codeMapJson)) {
-            this.codeMap.set(parseInt(key), value as CodeLocation);
-        }
+        this.codeMap = parseCodeMap(codeMapData);
 
 
         //connect to emulator
@@ -150,6 +156,7 @@ export class CdmDebugSession extends DebugSession {
         this.sendResponse(response);
         this.sendEvent(new StoppedEvent('entry', 1));
 
+        this.sendEmulatorMessage({action: "line_locations", data: Array.from(this.codeMap.keys())});
 
         console.log('done initialization');
         

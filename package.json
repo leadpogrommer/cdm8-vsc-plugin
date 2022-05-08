@@ -1,132 +1,139 @@
 {
-    "name": "cdm8-asm",
-    "displayName": "cdm8-asm",
-    "description": "",
-    "version": "0.0.1",
-    "engines": {
-        "vscode": "^1.65.0"
-    },
-    "categories": [
-        "Other"
-    ],
-    "activationEvents": [
-        "onDebug"
-    ],
-    "main": "./dist/extension.js",
-    "contributes": {
-        "configuration": {
-            "title": "Cdm8",
-            "properties": {
-                "cdm8.path": {
-                    "title": "Cdm8 path",
-                    "description": "Path to cloned https://github.com/leadpogrommer/Cdm8-asm repo",
-                    "type": "string"
-                }
-            }
+  "name": "cdm8-asm",
+  "displayName": "cdm8-asm",
+  "description": "",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.65.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onDebug"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "Cdm8",
+      "properties": {
+        "cdm8.asm": {
+          "title": "Cdm8 assembler path",
+          "description": "Path to cdm-asm",
+          "type": "string",
+          "default": "cdm-asm"
         },
+        "cdm8.emu": {
+          "title": "Cdm8 emulator path",
+          "description": "Path to cdm-emu",
+          "type": "string",
+          "default": "cdm-emu"
+        }
+      }
+    },
+    "languages": [
+      {
+        "id": "cdm8asm",
+        "aliases": [
+          "cdm8 assembly"
+        ],
+        "extensions": [
+          ".asm"
+        ],
+        "configuration": "language/language-config.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "cdm8asm",
+        "scopeName": "source.asm.cdm8",
+        "path": "language/cdm8.tmLanguage.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "extension.cdm8.debugEditorContents",
+        "title": "Run/Debug File",
+        "enablement": "!inDebugMode",
+        "icon": "$(debug-alt)"
+      }
+    ],
+    "breakpoints": [
+      {
+        "language": "cdm8asm"
+      }
+    ],
+    "debuggers": [
+      {
+        "label": "Cdm8 debugger",
+        "type": "cdm8",
         "languages": [
-            {
-                "id": "cdm8asm",
-                "aliases": [
-                    "cdm8 assembly"
-                ],
-                "extensions": [
-                    ".asm"
-                ],
-                "configuration": "language/language-config.json"
-            }
+          "cdm8asm"
         ],
-        "grammars": [
-            {
-                "language": "cdm8asm",
-                "scopeName": "source.asm.cdm8",
-                "path": "language/cdm8.tmLanguage.json"
+        "configurationAttributes": {
+          "launch": {
+            "required": [
+              "program"
+            ],
+            "program": {
+              "type": "string",
+              "description": "Absolute path to .asm file"
             }
+          }
+        },
+        "initialConfigurations": [
+          {
+            "label": "Mock Debug: Launch",
+            "description": "A new configuration for 'debugging' a user selected markdown file.",
+            "body": {
+              "type": "cdm8",
+              "request": "launch",
+              "name": "Ask for file name",
+              "program": "^\"\\${workspaceFolder}/\\${command:AskForProgramName}\""
+            }
+          }
         ],
-        "commands": [
-            {
-                "command": "extension.cdm8.debugEditorContents",
-                "title": "Run/Debug File",
-                "enablement": "!inDebugMode",
-                "icon": "$(debug-alt)"
-            }
-        ],
-        "breakpoints": [
-            {
-                "language": "cdm8asm"
-            }
-        ],
-        "debuggers": [
-            {
-                "label": "Cdm8 debugger",
-                "type": "cdm8",
-                "languages": [
-                    "cdm8asm"
-                ],
-                "configurationAttributes": {
-                    "launch": {
-                        "required": [
-                            "program"
-                        ],
-                        "program": {
-                            "type": "string",
-                            "description": "Absolute path to .asm file"
-                        }
-                    }
-                },
-                "initialConfigurations": [
-                    {
-                        "label": "Mock Debug: Launch",
-                        "description": "A new configuration for 'debugging' a user selected markdown file.",
-                        "body": {
-                            "type": "cdm8",
-                            "request": "launch",
-                            "name": "Ask for file name",
-                            "program": "^\"\\${workspaceFolder}/\\${command:AskForProgramName}\""
-                        }
-                    }
-                ],
-                "variables": {
-                    "AskForProgramName": "extension.cdm8.getProgramName"
-                }
-            }
-        ]
-    },
-    "scripts": {
-        "vscode:prepublish": "npm run package",
-        "compile": "webpack",
-        "watch": "webpack --watch",
-        "package": "webpack --mode production --devtool hidden-source-map",
-        "compile-tests": "tsc -p . --outDir out",
-        "watch-tests": "tsc -p . -w --outDir out",
-        "pretest": "npm run compile-tests && npm run compile && npm run lint",
-        "lint": "eslint src --ext ts",
-        "test": "node ./out/test/runTest.js"
-    },
-    "devDependencies": {
-        "@types/glob": "^7.2.0",
-        "@types/mocha": "^9.1.0",
-        "@types/node": "14.x",
-        "@types/vscode": "^1.65.0",
-        "@typescript-eslint/eslint-plugin": "^5.16.0",
-        "@typescript-eslint/parser": "^5.16.0",
-        "@vscode/test-electron": "^2.1.3",
-        "copy-webpack-plugin": "^10.2.4",
-        "eslint": "^8.11.0",
-        "glob": "^7.2.0",
-        "html-inline-script-webpack-plugin": "^3.0.0",
-        "html-webpack-plugin": "^5.5.0",
-        "mocha": "^9.2.2",
-        "ts-loader": "^9.2.8",
-        "typescript": "^4.5.5",
-        "webpack": "^5.70.0",
-        "webpack-cli": "^4.9.2"
-    },
-    "dependencies": {
-        "@types/ws": "^8.5.3",
-        "@vscode/debugadapter": "^1.55.1",
-        "@vscode/webview-ui-toolkit": "^0.9.3",
-        "prettier": "^2.6.1",
-        "ws": "^8.5.0"
-    }
+        "variables": {
+          "AskForProgramName": "extension.cdm8.getProgramName"
+        }
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/glob": "^7.2.0",
+    "@types/mocha": "^9.1.0",
+    "@types/node": "14.x",
+    "@types/vscode": "^1.65.0",
+    "@typescript-eslint/eslint-plugin": "^5.16.0",
+    "@typescript-eslint/parser": "^5.16.0",
+    "@vscode/test-electron": "^2.1.3",
+    "copy-webpack-plugin": "^10.2.4",
+    "eslint": "^8.11.0",
+    "glob": "^7.2.0",
+    "html-inline-script-webpack-plugin": "^3.0.0",
+    "html-webpack-plugin": "^5.5.0",
+    "mocha": "^9.2.2",
+    "ts-loader": "^9.2.8",
+    "typescript": "^4.5.5",
+    "webpack": "^5.70.0",
+    "webpack-cli": "^4.9.2"
+  },
+  "dependencies": {
+    "@types/ws": "^8.5.3",
+    "@vscode/debugadapter": "^1.55.1",
+    "@vscode/webview-ui-toolkit": "^0.9.3",
+    "prettier": "^2.6.1",
+    "ws": "^8.5.0"
+  }
 }
