@@ -9,7 +9,7 @@ interface ICdm8State {
 
 
 // requests to emulator
-type CdmRequest = CdmStepRequest | CdmSetBreakpointsRequest | CdmPauseRequest | CdmContinueRequest | CdmSetLineLocationsRequest;
+type CdmRequest = CdmStepRequest | CdmSetBreakpointsRequest | CdmPauseRequest | CdmContinueRequest | CdmSetLineLocationsRequest | CdmPathRequest;
 interface CdmStepRequest {
     action: 'step';
 }
@@ -30,6 +30,11 @@ interface CdmPauseRequest{
 
 interface CdmContinueRequest{
     action: 'continue',
+}
+
+interface CdmPathRequest {
+    'action': 'path',
+    'path': string
 }
 
 // events from emulator

@@ -20,6 +20,7 @@ export function activateCdmDebug(context: vscode.ExtensionContext){
                     name: 'Run File',
                     request: 'launch',
                     program: targetResource.fsPath,
+                    runner: 'emulator'
                 });
             }
         })
@@ -45,13 +46,22 @@ export function activateCdmDebug(context: vscode.ExtensionContext){
                 provideDebugConfigurations(folder: WorkspaceFolder | undefined): ProviderResult<DebugConfiguration[]> {
                     return [
                         {
-                            name: 'Dynamic Launch',
+                            name: 'Dynamic Launch (emulator)',
                             request: 'launch',
                             type: 'cdm8',
                             program: '${file}',
+                            runner: 'emulator'
+                        },
+                        {
+                            name: 'Dynamic Launch (logisim)',
+                            request: 'launch',
+                            type: 'cdm8',
+                            program: '${file}',
+                            runner: 'logisim'
                         },
                     ];
                 },
+                
             },
             vscode.DebugConfigurationProviderTriggerKind.Dynamic
         )
@@ -88,6 +98,7 @@ class CdmConfigurationProvider implements vscode.DebugConfigurationProvider {
                 config.name = 'Launch';
                 config.request = 'launch';
                 config.program = '${file}';
+                config.runner = 'emulator';
             }
         }
 

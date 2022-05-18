@@ -40,7 +40,8 @@ import {CodeMap, CodeLocation, parseCodeMap} from './codeMap';
 
 interface ILaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
     program: string;
-    cdmPath: string;
+    // cdmPath: string;
+    runner: 'emulator' | 'logisim'
 }
 
 
@@ -91,7 +92,7 @@ export class CdmDebugSession extends DebugSession {
         }
 
 
-        console.log(`launched, program = ${args.program}`);
+        console.log(`launched, program = ${args.program}, runner = ${args.runner}`);
 
 
         const noExtensionPath = args.program.replace(new RegExp(`${path.extname(args.program)}$`), '');
@@ -120,21 +121,26 @@ export class CdmDebugSession extends DebugSession {
             return;
         }
 
-        
-        this.emulatorProcess = spawn(this.cdmEmuPath, ['--serve', imgPath]);
-
-        if (this.emulatorProcess.stdout === null || this.emulatorProcess.stderr === null) {
-            this.sendEvent(new TerminatedEvent());
-            return;
-        }
-
-        const emuInterface = createInterface(this.emulatorProcess.stdout);
         let emuPort!: Number;
 
-        for await (const line of emuInterface) {
-            emuPort = parseInt(line);
-            break;
+        if(args.runner === 'emulator'){
+            this.emulatorProcess = spawn(this.cdmEmuPath, ['--serve', imgPath]);
+
+            if (this.emulatorProcess.stdout === null || this.emulatorProcess.stderr === null) {
+                this.sendEvent(new TerminatedEvent());
+                return;
+            }
+
+            const emuInterface = createInterface(this.emulatorProcess.stdout);
+
+            for await (const line of emuInterface) {
+                emuPort = parseInt(line);
+                break;
+            }
+        }else{
+            emuPort = 1337;
         }
+        
         console.log(emuPort);
 
         // load debug info
@@ -156,6 +162,9 @@ export class CdmDebugSession extends DebugSession {
         this.sendResponse(response);
         this.sendEvent(new StoppedEvent('entry', 1));
 
+        if(args.runner === "logisim"){
+            this.sendEmulatorMessage({'action': 'path', 'path': imgPath});
+        }
         this.sendEmulatorMessage({action: "line_locations", data: Array.from(this.codeMap.keys())});
 
         console.log('done initialization');
