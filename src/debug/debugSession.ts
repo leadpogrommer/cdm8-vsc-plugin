@@ -255,7 +255,8 @@ export class CdmDebugSession extends DebugSession {
         response.body = { variables: [] };
         if (args.variablesReference === registersVariableReference) {
             for (const [name, value] of Object.entries(this.latestState.registers)) {
-                response.body.variables.push(new Variable(name, value.toString()));
+                const valueString = value.toString().padStart(3, ' ') + "   0x" + value.toString(16).padStart(4, '0');
+                response.body.variables.push(new Variable(name, valueString));
             }
         } else if (args.variablesReference === memoryVariableReference) {
             response.body.variables.push(new Variable('Data memory', '...', dataMemVariableReference));
