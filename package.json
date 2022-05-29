@@ -52,14 +52,6 @@
         "path": "language/cdm8.tmLanguage.json"
       }
     ],
-    "commands": [
-      {
-        "command": "extension.cdm8.debugEditorContents",
-        "title": "Run/Debug File",
-        "enablement": "!inDebugMode",
-        "icon": "$(debug-alt)"
-      }
-    ],
     "breakpoints": [
       {
         "language": "cdm8asm"
@@ -75,12 +67,16 @@
         "configurationAttributes": {
           "launch": {
             "required": [
-              "program"
+              "program",
+              "runner"
             ],
             "properties": {
               "program": {
-                "type": "string",
-                "description": "Absolute path to .asm file"
+                "type": "array",
+                "description": "Absolute pathes to .asm files",
+                "items": {
+                  "type": "string"
+                }
               },
               "runner": {
                 "type": "string",
@@ -91,18 +87,7 @@
           }
         },
         "initialConfigurations": [
-          {
-            
-              "type": "cdm8",
-              "request": "launch",
-              "name": "Ask for file name",
-              "program": "^\"\\${workspaceFolder}/\\${command:AskForProgramName}\""
-            
-          }
-        ],
-        "variables": {
-          "AskForProgramName": "extension.cdm8.getProgramName"
-        }
+        ]
       }
     ]
   },

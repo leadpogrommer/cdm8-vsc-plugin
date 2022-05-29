@@ -39,7 +39,7 @@ import {CodeMap, CodeLocation, parseCodeMap} from './codeMap';
 
 
 interface ILaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
-    program: string;
+    program: string[];
     // cdmPath: string;
     runner: 'emulator' | 'logisim'
 }
@@ -95,11 +95,11 @@ export class CdmDebugSession extends DebugSession {
         console.log(`launched, program = ${args.program}, runner = ${args.runner}`);
 
 
-        const noExtensionPath = args.program.replace(new RegExp(`${path.extname(args.program)}$`), '');
+        const noExtensionPath = args.program[0].replace(new RegExp(`${path.extname(args.program[0])}$`), '');
         const imgPath = noExtensionPath + '.img';
         const codeMapPath = noExtensionPath + '.dbg.json';
         console.log(process.env.PATH);
-        const assemblerProcess = spawn(this.cdmAsmPath, ['-i', imgPath, '-d', codeMapPath, args.program]);
+        const assemblerProcess = spawn(this.cdmAsmPath, ['-i', imgPath, '-d', codeMapPath, ...args.program]);
         assemblerProcess.on('error', (e) => {
             this.sendEvent(new OutputEvent(`ERROR: ${e.name}: ${e.message}`, 'important'));
             this.sendEvent(new TerminatedEvent());
@@ -109,10 +109,13 @@ export class CdmDebugSession extends DebugSession {
             // console.log(data.toString());
             this.sendEvent(new OutputEvent(data.toString(), 'debug console'));
         }
+        for await(const data of assemblerProcess.stderr) {
+            this.sendEvent(new OutputEvent('[ASM ERROR] ' + data.toString(), 'debug console'));
+        }
 
-        await new Promise((resolve) => {
+        await new Promise<void>((resolve) => {
             assemblerProcess.on('exit', () => {
-                resolve(undefined);
+                resolve();
             });
         });
         if(assemblerProcess.exitCode !== 0){

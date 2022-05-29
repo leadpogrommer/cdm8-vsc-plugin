@@ -8,32 +8,32 @@ export const cdmDebugSessionType = 'cdm8';
 
 export function activateCdmDebug(context: vscode.ExtensionContext){
     // activate debug
-    context.subscriptions.push(
-        vscode.commands.registerCommand('extension.cdm8.debugEditorContents', (resource: vscode.Uri) => {
-            let targetResource = resource;
-            if (!targetResource && vscode.window.activeTextEditor) {
-                targetResource = vscode.window.activeTextEditor.document.uri;
-            }
-            if (targetResource) {
-                vscode.debug.startDebugging(undefined, {
-                    type: 'cdm8',
-                    name: 'Run File',
-                    request: 'launch',
-                    program: targetResource.fsPath,
-                    runner: 'emulator'
-                });
-            }
-        })
-    );
+    // context.subscriptions.push(
+    //     vscode.commands.registerCommand('extension.cdm8.debugEditorContents', (resource: vscode.Uri) => {
+    //         let targetResource = resource;
+    //         if (!targetResource && vscode.window.activeTextEditor) {
+    //             targetResource = vscode.window.activeTextEditor.document.uri;
+    //         }
+    //         if (targetResource) {
+    //             vscode.debug.startDebugging(undefined, {
+    //                 type: 'cdm8',
+    //                 name: 'Run File',
+    //                 request: 'launch',
+    //                 program: targetResource.fsPath,
+    //                 runner: 'emulator'
+    //             });
+    //         }
+    //     })
+    // );
 
-    context.subscriptions.push(
-        vscode.commands.registerCommand('extension.cdm8.getProgramName', (config) => {
-            return vscode.window.showInputBox({
-                placeHolder: 'Please enter the name of a .asm file in the workspace folder',
-                value: 'program.asm',
-            });
-        })
-    );
+    // context.subscriptions.push(
+    //     vscode.commands.registerCommand('extension.cdm8.getProgramName', (config) => {
+    //         return vscode.window.showInputBox({
+    //             placeHolder: 'Please enter the name of a .asm file in the workspace folder',
+    //             value: 'program.asm',
+    //         });
+    //     })
+    // );
 
     // register debugger itself
     const provider = new CdmConfigurationProvider();
@@ -46,17 +46,17 @@ export function activateCdmDebug(context: vscode.ExtensionContext){
                 provideDebugConfigurations(folder: WorkspaceFolder | undefined): ProviderResult<DebugConfiguration[]> {
                     return [
                         {
-                            name: 'Dynamic Launch (emulator)',
+                            name: 'Eemulator current file',
                             request: 'launch',
                             type: 'cdm8',
-                            program: '${file}',
+                            program: ['${file}'],
                             runner: 'emulator'
                         },
                         {
-                            name: 'Dynamic Launch (logisim)',
+                            name: 'Logisim current file',
                             request: 'launch',
                             type: 'cdm8',
-                            program: '${file}',
+                            program: ['${file}'],
                             runner: 'logisim'
                         },
                     ];
@@ -97,7 +97,7 @@ class CdmConfigurationProvider implements vscode.DebugConfigurationProvider {
                 config.type = 'cdm8';
                 config.name = 'Launch';
                 config.request = 'launch';
-                config.program = '${file}';
+                config.program = ['${file}'];
                 config.runner = 'emulator';
             }
         }
