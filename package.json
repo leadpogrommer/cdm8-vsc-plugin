@@ -1,7 +1,8 @@
 {
   "name": "cdm8-asm",
   "displayName": "cdm8-asm",
-  "description": "",
+  "description": "Cdm8e debuggin support",
+  "repository": "https://github.com/leadpogrommer/cdm8-vsc-plugin",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.65.0"
