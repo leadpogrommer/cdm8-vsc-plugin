@@ -35,7 +35,8 @@ export function activateDebugView(context: vscode.ExtensionContext){
             let htmlContent = (await fs.promises.readFile(htmlPath)).toString();
 
             let scriptJsPath = vscode.Uri.file(path.join(basePath.toString(), 'index.js'));
-            let scriptJsUri = scriptJsPath.with({ scheme: 'vscode-resource' });
+            // let scriptJsUri = scriptJsPath.with({ scheme: 'vscode-resource' });
+            let scriptJsUri = currentPanel.webview.asWebviewUri(scriptJsPath);
 
             let toolkitUri = vscode.Uri.file(path.join(
                 context.extensionPath, 
@@ -47,7 +48,7 @@ export function activateDebugView(context: vscode.ExtensionContext){
               )).with({ scheme: 'vscode-resource' });
 
             htmlContent = htmlContent.replace('%SCRIPT_PATH%', scriptJsUri.toString());
-            htmlContent = htmlContent.replace('%TOOLKIT_PATH%', toolkitUri.toString());
+            // htmlContent = htmlContent.replace('%TOOLKIT_PATH%', toolkitUri.toString());
 
             currentPanel.webview.html = htmlContent;
 

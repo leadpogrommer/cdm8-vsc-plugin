@@ -4,7 +4,7 @@
 
   "description": "Cdm8e debugging support",
   "repository": "https://github.com/leadpogrommer/cdm8-vsc-plugin.git",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "publisher": "leadpogrommer",
   "icon": "logo.png",
   "engines": {
